@@ -1,0 +1,48 @@
+version: "3" # 파일 규격 버전
+
+services: # 이 항목 밑에 실행하려는 컨테이너 들을 정의
+  db: # 서비스 명
+    image: mysql:8.0.26 # 사용할 이미지
+    container_name: mysql # 컨테이너 이름 설정
+    ports:
+      - "3306:3306" # 접근 포트 설정 (컨테이너 외부:컨테이너 내부)
+    environment: # -e 옵션
+      MYSQL_ROOT_PASSWORD: "root"  # MYSQL 패스워드 설정 옵션
+    command: # 명령어 실행
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - ./mysql:/var/lib/mysql # -v 옵션 (다렉토리 마운트 설정) 복붙이 되도록
+
+# 로드밸런싱
+#
+  nginx:
+    image: nginx:1.21.0
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    ports:
+      - 80:80 # 80(로컬):80(컨테이너) # localhost:80 컨테이너의 80
+    depends_on:
+      - docker-demo1
+      - docker-demo2
+
+# 서버1
+  docker-demo1:
+    image: dockerdemo # dockerdemo라는 이미지를 사용하고 해당 이미지를 컨테이너로 만들어주는
+    # docker-demo1 해당 컨테이너의 8080 포트가 열려있고
+    ports:
+      - "8080:8080" #localhost:8080
+
+# 서버2
+  docker-demo2:
+    image: dockerdemo # dockerdemo라는 이미지를 사용하고 해당 이미지를 컨테이너로 만들어주는
+    # dockerdemo
+    # docker-demo2 해당 컨테이너의 8080 포트가 열려있고
+    ports:
+      - "8081:8080" #localhost:8081
+
+
+# 도커데모1과 도커 데모2 는 완전히 다른 컨테이너
+# 각각을 실행시키면은
+# 각각의 서버에서
+# 컨테이너 내부의 8080 포트로 실행이 되게끔
